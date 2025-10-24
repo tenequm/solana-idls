@@ -1,0 +1,53 @@
+{
+  "name": "@obsidian-debug/solana-errors",
+  "version": "0.1.0",
+  "description": "Comprehensive Solana error code database covering runtime, Anchor, and popular programs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "license": "MIT",
+  "keywords": [
+    "solana",
+    "errors",
+    "anchor",
+    "blockchain",
+    "error-codes",
+    "debugging",
+    "web3"
+  ],
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tenequm/obsidian-protocol",
+    "directory": "packages/solana-errors"
+  },
+  "bugs": {
+    "url": "https://github.com/tenequm/obsidian-protocol/issues"
+  },
+  "homepage": "https://github.com/tenequm/obsidian-protocol/tree/main/packages/solana-errors#readme"
+}
