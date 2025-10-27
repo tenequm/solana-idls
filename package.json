@@ -3,6 +3,20 @@
   "version": "0.1.0",
   "description": "Comprehensive Solana error code database covering runtime, Anchor, and popular programs",
   "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "prebuild": "pnpm generate",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "type-check": "tsc --noEmit",
+    "generate": "tsx scripts/generate.ts",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.1",
+    "zx": "^8.8.5"
+  },
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -12,7 +26,9 @@
       "require": "./dist/index.js"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "src/generated/protocols.ts"
+  ],
   "license": "MIT",
   "keywords": [
     "solana",
@@ -28,26 +44,16 @@
     "README.md",
     "LICENSE"
   ],
-  "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
-    "type-check": "tsc --noEmit",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
-  },
-  "devDependencies": {
-    "tsup": "^8.5.0",
-    "typescript": "^5.9.3"
-  },
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tenequm/obsidian-protocol",
+    "url": "https://github.com/tenequm/obsidian-debug",
     "directory": "packages/solana-errors"
   },
   "bugs": {
-    "url": "https://github.com/tenequm/obsidian-protocol/issues"
+    "url": "https://github.com/tenequm/obsidian-debug/issues"
   },
-  "homepage": "https://github.com/tenequm/obsidian-protocol/tree/main/packages/solana-errors#readme"
+  "homepage": "https://github.com/tenequm/obsidian-debug/tree/main/packages/solana-errors#readme"
 }

@@ -1,103 +1,184 @@
 /**
- * Comprehensive Solana and program-specific error code mappings
- * Used to translate hex error codes into human-readable names and descriptions
+ * Core type definitions for Solana error database
  *
- * Sources:
- * - Anchor Framework: https://github.com/coral-xyz/anchor
- * - Solana Runtime: https://github.com/solana-labs/solana
- * - Raydium AMM: https://github.com/raydium-io/raydium-amm
- * - Metaplex: https://github.com/metaplex-foundation
+ * Uses `type` instead of `interface` following 2025 TypeScript best practices
  */
-interface ErrorInfo {
+/**
+ * Raw error definition from IDL
+ * Supports both Anchor format (msg) and Solana Program format (message, docs)
+ * @see https://www.anchor-lang.com/docs/idl-spec
+ */
+type IdlError = {
+    readonly code: number;
+    readonly name: string;
+    readonly msg?: string;
+    readonly message?: string;
+    readonly docs?: string[];
+};
+/**
+ * Error source provenance for tracking where an error originated
+ *
+ * - program-specific: Error unique to a specific program (Jupiter, Orca, etc.)
+ * - anchor-framework: Anchor framework error that applies to any Anchor program
+ * - token-program: SPL Token or Token-2022 program error
+ */
+type ErrorSource = {
+    readonly type: "program-specific";
+    readonly programId: string;
+    readonly programName: string;
+} | {
+    readonly type: "anchor-framework";
+    readonly programId: string;
+} | {
+    readonly type: "token-program";
+    readonly programId: string;
+    readonly programName: string;
+};
+/**
+ * Error information extracted directly from IDL
+ * No interpretation or enhancement - pure data from source
+ */
+type ErrorInfo = {
+    readonly code: number;
+    readonly name: string;
+    readonly description: string;
+    readonly docs?: readonly string[];
+    readonly source: ErrorSource;
+};
+/**
+ * IDL source provenance for tracking where errors came from
+ */
+type IdlSource = {
+    readonly type: "on-chain";
+    readonly fetchedAt: string;
+} | {
+    readonly type: "github";
+    readonly url: string;
+    readonly commit: string;
+} | {
+    readonly type: "npm";
+    readonly package: string;
+    readonly version: string;
+};
+/**
+ * Protocol metadata for provenance tracking
+ */
+type ProtocolMetadata = {
+    readonly name: string;
+    readonly programId: string;
+    readonly version: string;
+    readonly idlSource?: IdlSource;
+    readonly lastVerified?: string;
+};
+
+/**
+ * Protocol class representing a Solana program's error database
+ */
+
+interface ProtocolConfig {
     name: string;
-    description: string;
-    category?: string;
-    debugTip?: string;
+    programId: string;
+    version: string;
+    errors: Record<number, Omit<ErrorInfo, "source">>;
+    idlSource?: ProtocolMetadata["idlSource"];
+    lastVerified?: string;
+}
+declare class Protocol {
+    readonly name: string;
+    readonly programId: string;
+    readonly version: string;
+    private readonly errors;
+    private readonly metadata;
+    constructor(config: ProtocolConfig);
+    /**
+     * Get error by code (without source metadata)
+     * Source is added by registry during resolution
+     */
+    getError(code: number): Omit<ErrorInfo, "source"> | null;
+    /**
+     * Get all errors for this protocol (without source metadata)
+     */
+    getAllErrors(): readonly Omit<ErrorInfo, "source">[];
+    /**
+     * Get protocol metadata
+     */
+    getMetadata(): ProtocolMetadata;
+    /**
+     * Get error count
+     */
+    getErrorCount(): number;
+    /**
+     * Check if protocol has a specific error code
+     */
+    hasError(code: number): boolean;
+    /**
+     * Search errors by name or description (without source metadata)
+     */
+    searchErrors(query: string): Omit<ErrorInfo, "source">[];
+}
+
+/**
+ * Global protocol registry for error resolution
+ */
+
+declare class ProtocolRegistry {
+    private readonly protocols;
+    private readonly programIdIndex;
+    private frameworkProtocol;
+    /**
+     * Register a protocol in the registry
+     */
+    register(protocol: Protocol): void;
+    /**
+     * Register a framework protocol that provides fallback error resolution
+     * Framework protocols (like Anchor) apply to any program and are checked
+     * after program-specific lookups fail
+     */
+    registerFramework(protocol: Protocol): void;
+    /**
+     * Resolve error by program ID and error code
+     * Uses hierarchical resolution:
+     * 1. Program-specific lookup (Jupiter, Orca, SPL Token, etc.)
+     * 2. Framework fallback (Anchor errors)
+     *
+     * Enriches errors with source metadata for transparency
+     */
+    resolve(programId: string, code: number): ErrorInfo | null;
+    /**
+     * Get protocol by name
+     */
+    getByName(name: string): Protocol | null;
+    /**
+     * Get protocol by program ID
+     */
+    getByProgramId(programId: string): Protocol | null;
+    /**
+     * List all registered protocols
+     */
+    listAll(): readonly Protocol[];
+    /**
+     * Get all protocol metadata
+     */
+    listMetadata(): readonly ProtocolMetadata[];
+    /**
+     * Search errors across all protocols (returns errors without source metadata)
+     */
+    search(query: string): Array<{
+        protocol: Protocol;
+        error: Omit<ErrorInfo, "source">;
+    }>;
+    /**
+     * Get total error count across all protocols
+     */
+    getTotalErrorCount(): number;
+    /**
+     * Clear all registered protocols (useful for testing)
+     */
+    clear(): void;
 }
 /**
- * Common Solana runtime/builtin errors
+ * Global singleton registry instance
  */
-declare const SOLANA_ERRORS: Record<number, ErrorInfo>;
-/**
- * Anchor Framework errors (100-5000 range)
- * Most common errors for Anchor-based programs
- */
-declare const ANCHOR_ERRORS: Record<number, ErrorInfo>;
-/**
- * Raydium AMM V4 error codes
- * Source: https://github.com/raydium-io/raydium-amm/blob/master/program/src/error.rs
- */
-declare const RAYDIUM_AMM_ERRORS: Record<number, ErrorInfo>;
-/**
- * SPL Token Program error codes
- * Source: https://docs.rs/spl-token/latest/spl_token/error/enum.TokenError.html
- * Used by the standard Token Program (TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA)
- */
-declare const SPL_TOKEN_ERRORS: Record<number, ErrorInfo>;
-/**
- * Metaplex Candy Machine error codes
- * Source: https://github.com/metaplex-foundation/mpl-core-candy-machine
- */
-declare const METAPLEX_CANDY_MACHINE_ERRORS: Record<number, ErrorInfo>;
-/**
- * Metaplex MPL Core error codes
- * Source: https://github.com/metaplex-foundation/mpl-core
- */
-declare const MPL_CORE_ERRORS: Record<number, ErrorInfo>;
-/**
- * Orca Whirlpools error codes
- * Source: https://github.com/orca-so/whirlpools/blob/main/programs/whirlpool/src/errors.rs
- * Used by Orca's concentrated liquidity AMM (Whirlpools program)
- */
-declare const ORCA_WHIRLPOOLS_ERRORS: Record<number, ErrorInfo>;
-/**
- * Jupiter Aggregator error codes
- * Source: https://dev.jup.ag/docs/swap/common-errors
- * Used by Jupiter swap aggregator (v1, v4, v6)
- */
-declare const JUPITER_ERRORS: Record<number, ErrorInfo>;
-/**
- * Map program addresses to their error code dictionaries
- */
-declare const PROGRAM_ERROR_CODES: Record<string, Record<number, ErrorInfo>>;
-/**
- * Resolve an error code to a human-readable name and description
- * Enhanced to support Anchor errors and provide categorization
- */
-declare function resolveErrorCode(programId: string | undefined, errorCode: number): ErrorInfo | null;
+declare const registry: ProtocolRegistry;
 
-/**
- * Common Solana error patterns and scenarios
- * Used to provide additional context and debugging tips for frequently encountered errors
- */
-interface ErrorPattern {
-    keywords: string[];
-    category: string;
-    likelyReason: string;
-    quickFix: string;
-    severity: "critical" | "high" | "medium" | "low";
-}
-/**
- * Common error patterns extracted from real-world Solana debugging scenarios
- * Sources: Community reports, Stack Exchange, developer blogs
- */
-declare const ERROR_PATTERNS: ErrorPattern[];
-/**
- * Match error logs against known patterns
- * Returns the most relevant pattern based on keyword matching
- */
-declare function matchErrorPattern(errorText: string): ErrorPattern | null;
-/**
- * Get debugging tips based on error category
- */
-declare function getCategoryDebugTips(category: string): string[];
-
-/**
- * Solana utility functions
- */
-/**
- * Validates if a string is a valid Solana transaction signature
- */
-declare function isValidSignature(signature: string): boolean;
-
-export { ANCHOR_ERRORS, ERROR_PATTERNS, type ErrorInfo, type ErrorPattern, JUPITER_ERRORS, METAPLEX_CANDY_MACHINE_ERRORS, MPL_CORE_ERRORS, ORCA_WHIRLPOOLS_ERRORS, PROGRAM_ERROR_CODES, RAYDIUM_AMM_ERRORS, SOLANA_ERRORS, SPL_TOKEN_ERRORS, getCategoryDebugTips, isValidSignature, matchErrorPattern, resolveErrorCode };
+export { type ErrorInfo, type IdlError, Protocol, type ProtocolMetadata, registry };

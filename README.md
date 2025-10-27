@@ -1,313 +1,227 @@
 # @obsidian-debug/solana-errors
 
-> Comprehensive Solana error code database covering runtime, Anchor, and popular programs
+> Type-safe Solana error database extracted from program IDLs
 
 [![npm version](https://img.shields.io/npm/v/@obsidian-debug/solana-errors.svg)](https://www.npmjs.com/package/@obsidian-debug/solana-errors)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Overview
+Maps Solana program error codes to human-readable names and descriptions. All errors are extracted directly from official IDLs for 100% accuracy.
 
-A comprehensive, type-safe error code database for Solana development. This package provides human-readable error names, descriptions, and debugging tips for:
+## Features
 
-- **Solana Runtime Errors**: Core blockchain errors
-- **Anchor Framework**: All Anchor program errors (100-6000 range)
-- **Popular Programs**: Raydium, Jupiter, Orca, Metaplex, SPL Token
-- **Error Patterns**: Common scenarios with debugging tips
+- **IDL-based accuracy** - Extracted directly from official program IDLs
+- **Type-safe** - Full TypeScript support with immutable types
+- **Zero config** - Works out of the box
+- **Hierarchical resolution** - Program-specific errors + Anchor framework fallback
+- **Easy maintenance** - Single config file, auto-generated code
+
+## Supported Programs
+
+| Protocol | Errors | Source |
+|----------|--------|--------|
+| [Jupiter Aggregator v6](https://jup.ag) | 18 | GitHub IDL |
+| [Orca Whirlpools](https://www.orca.so) | 56 | On-chain IDL |
+| [Raydium AMM V4](https://raydium.io) | 57 | GitHub IDL |
+| [Raydium AMM V3 (CLMM)](https://raydium.io) | 45 | GitHub IDL |
+| [Raydium CP Swap](https://raydium.io) | 11 | GitHub IDL |
+| [TON Whales Holders](https://solscan.io/account/6bES2dKy1ee13HQ4uW4ycw4Kw4od9ziZeWMyAxVySYEd) | 27 | On-chain IDL |
+| [Magic Eden V2](https://magiceden.io) | 40 | On-chain IDL |
+| [Tensor](https://tensor.trade) | 2 | On-chain IDL |
+| [Metaplex Auction House](https://www.metaplex.com) | 44 | On-chain IDL |
+| [SPL Token Program](https://spl.solana.com/token) | 20 | GitHub IDL |
+| [Token-2022 Program](https://spl.solana.com/token-2022) | 20 | GitHub IDL |
+| **+ Anchor Framework** | **59** | Manual |
+| **Total** | **399** | — |
 
 ## Installation
 
 ```bash
 npm install @obsidian-debug/solana-errors
-# or
-pnpm add @obsidian-debug/solana-errors
-# or
-yarn add @obsidian-debug/solana-errors
 ```
 
 ## Quick Start
 
 ```typescript
-import { resolveErrorCode, matchErrorPattern } from '@obsidian-debug/solana-errors';
+import { registry } from '@obsidian-debug/solana-errors';
 
-// Resolve a numeric error code
-const error = resolveErrorCode(2006, 'Anchor');
-console.log(error);
-// {
-//   name: 'AccountNotInitialized',
-//   description: 'The program expected this account to be already initialized',
-//   category: 'Account',
-//   debugTip: 'Verify account initialization order'
-// }
+// Resolve error by program ID and error code
+const error = registry.resolve(
+  'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
+  6001
+);
 
-// Match error text to common patterns
-const pattern = matchErrorPattern('compute budget exceeded');
-console.log(pattern);
-// {
-//   category: 'Resource Limits',
-//   likelyReason: 'Transaction consumed more than 200k compute units...',
-//   quickFix: 'Add ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 })',
-//   severity: 'high'
-// }
-```
-
-## Features
-
-### 🎯 Comprehensive Coverage
-
-- **1000+ error codes** mapped across Solana ecosystem
-- Covers Anchor, Raydium, Jupiter, Orca, Metaplex, and more
-- Regular updates as new programs emerge
-
-### 🔍 Smart Error Resolution
-
-```typescript
-import { resolveErrorCode, PROGRAM_ERROR_CODES } from '@obsidian-debug/solana-errors';
-
-// Resolve by program and code
-const anchorError = resolveErrorCode(2006, 'Anchor');
-const raydiumError = resolveErrorCode(1, 'Raydium');
-
-// Or access directly
-const allAnchorErrors = PROGRAM_ERROR_CODES.Anchor;
-```
-
-### 🛠️ Pattern Matching
-
-```typescript
-import { matchErrorPattern, getCategoryDebugTips } from '@obsidian-debug/solana-errors';
-
-// Match error text
-const pattern = matchErrorPattern('blockhash not found');
-console.log(pattern.quickFix);
-
-// Get all tips for a category
-const tips = getCategoryDebugTips('Resource Limits');
-```
-
-### ✅ Signature Validation
-
-```typescript
-import { isValidSignature } from '@obsidian-debug/solana-errors';
-
-const valid = isValidSignature('5KxR...abc'); // true/false
-```
-
-## API Reference
-
-### Core Functions
-
-#### `resolveErrorCode(code: number, programType?: string): ErrorInfo | null`
-
-Resolves a numeric error code to detailed error information.
-
-**Parameters:**
-- `code`: The numeric error code
-- `programType`: Optional program identifier ('Anchor', 'Raydium', 'Jupiter', etc.)
-
-**Returns:** ErrorInfo object or null if not found
-
-```typescript
-const error = resolveErrorCode(3012);
-// {
-//   name: 'ConstraintMut',
-//   description: 'A mut constraint was violated',
-//   category: 'Constraint',
-//   debugTip: 'Check account is passed as mutable'
-// }
-```
-
-#### `matchErrorPattern(errorText: string): ErrorPattern | null`
-
-Matches error text against common patterns.
-
-**Parameters:**
-- `errorText`: The error message text
-
-**Returns:** ErrorPattern object or null
-
-```typescript
-const pattern = matchErrorPattern('transaction too large');
-console.log(pattern.severity); // 'high'
-```
-
-#### `getCategoryDebugTips(category: string): string[]`
-
-Gets all debugging tips for a specific error category.
-
-### Type Definitions
-
-```typescript
-interface ErrorInfo {
-  name: string;
-  description: string;
-  category?: string;
-  debugTip?: string;
-}
-
-interface ErrorPattern {
-  keywords: string[];
-  category: string;
-  likelyReason: string;
-  quickFix: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
+if (error) {
+  console.log(`${error.name}: ${error.description}`);
+  // Output: "SlippageToleranceExceeded: Slippage tolerance exceeded"
 }
 ```
 
-### Exported Constants
+## API
+
+### `registry.resolve(programId: string, errorCode: number)`
+
+Resolve an error by program ID and error code. Returns enriched error with source metadata.
 
 ```typescript
-import {
-  SOLANA_ERRORS,          // Core Solana runtime errors
-  ANCHOR_ERRORS,          // Anchor Framework errors
-  RAYDIUM_AMM_ERRORS,     // Raydium AMM errors
-  SPL_TOKEN_ERRORS,       // SPL Token program errors
-  JUPITER_ERRORS,         // Jupiter aggregator errors
-  ORCA_WHIRLPOOLS_ERRORS, // Orca Whirlpools errors
-  METAPLEX_CANDY_MACHINE_ERRORS, // Metaplex Candy Machine
-  MPL_CORE_ERRORS,        // Metaplex Core errors
-  ERROR_PATTERNS,         // Common error patterns
-  PROGRAM_ERROR_CODES     // All programs combined
-} from '@obsidian-debug/solana-errors';
+const error = registry.resolve(
+  'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
+  6000
+);
+// {
+//   code: 6000,
+//   name: "InvalidEnum",
+//   description: "Enum value could not be converted",
+//   source: { type: "program-specific", programId: "whir...", programName: "Orca Whirlpools" }
+// }
 ```
 
-## Usage Examples
+**Hierarchical resolution**:
+1. Program-specific errors (Jupiter, Orca, SPL Token, etc.)
+2. Anchor framework errors (fallback for any Anchor program)
 
-### Transaction Error Debugging
+### `registry.getByProgramId(programId: string)`
+
+Get protocol instance for a program ID.
 
 ```typescript
-import { resolveErrorCode, matchErrorPattern } from '@obsidian-debug/solana-errors';
+const protocol = registry.getByProgramId(
+  '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+);
+
+console.log(protocol.name); // "Raydium AMM V4"
+console.log(protocol.getErrorCount()); // 57
+```
+
+### `registry.search(query: string)`
+
+Search errors across all protocols.
+
+```typescript
+const results = registry.search('slippage');
+results.forEach(({ protocol, error }) => {
+  console.log(`[${protocol.name}] ${error.name}`);
+});
+```
+
+## Usage Example
+
+```typescript
+import { Connection } from '@solana/web3.js';
+import { registry } from '@obsidian-debug/solana-errors';
 
 async function debugTransaction(signature: string) {
-  const tx = await connection.getTransaction(signature);
+  const connection = new Connection('https://api.mainnet-beta.solana.com');
+  const tx = await connection.getTransaction(signature, {
+    maxSupportedTransactionVersion: 0
+  });
 
-  if (tx?.meta?.err) {
-    const errorCode = extractErrorCode(tx.meta.err);
-    const errorInfo = resolveErrorCode(errorCode);
+  if (tx?.meta?.err && 'InstructionError' in tx.meta.err) {
+    const [index, error] = tx.meta.err.InstructionError;
 
-    console.log(`Error: ${errorInfo.name}`);
-    console.log(`Tip: ${errorInfo.debugTip}`);
+    if ('Custom' in error) {
+      const errorCode = error.Custom;
+      const programId = tx.transaction.message.staticAccountKeys[
+        tx.transaction.message.compiledInstructions[index].programIdIndex
+      ].toBase58();
 
-    // Also check for pattern matches
-    const pattern = matchErrorPattern(tx.meta.logMessages?.join(' '));
-    if (pattern) {
-      console.log(`Quick Fix: ${pattern.quickFix}`);
+      const errorInfo = registry.resolve(programId, errorCode);
+
+      if (errorInfo) {
+        console.log(`Error in instruction ${index}:`);
+        console.log(`  Program: ${errorInfo.source.programName}`);
+        console.log(`  Error: ${errorInfo.name} (${errorInfo.code})`);
+        console.log(`  Description: ${errorInfo.description}`);
+      }
     }
   }
 }
 ```
 
-### Custom Error Handler
+## Types
 
 ```typescript
-import { resolveErrorCode, ERROR_PATTERNS } from '@obsidian-debug/solana-errors';
+type ErrorInfo = {
+  readonly code: number;
+  readonly name: string;
+  readonly description: string;
+  readonly source: ErrorSource;
+};
 
-class SolanaErrorHandler {
-  static format(error: any): string {
-    const code = this.extractCode(error);
-    const info = resolveErrorCode(code);
-
-    if (info) {
-      return `${info.name}: ${info.description}\n💡 ${info.debugTip}`;
-    }
-
-    return error.toString();
-  }
-
-  static getSuggestions(errorText: string): string[] {
-    return ERROR_PATTERNS
-      .filter(p => p.keywords.some(k => errorText.includes(k)))
-      .map(p => p.quickFix);
-  }
-}
-```
-
-### IDE Integration
-
-```typescript
-import { ANCHOR_ERRORS } from '@obsidian-debug/solana-errors';
-
-// Generate autocomplete data
-const anchorErrorList = Object.entries(ANCHOR_ERRORS).map(([code, info]) => ({
-  code: Number(code),
-  label: info.name,
-  documentation: `${info.description}\n\n${info.debugTip || ''}`
-}));
-```
-
-## Coverage
-
-| Category | Count | Examples |
-|----------|-------|----------|
-| Solana Runtime | 15 | InsufficientFunds, InvalidAccountData |
-| Anchor Framework | 50+ | ConstraintMut, AccountNotInitialized |
-| Raydium AMM | 20+ | InvalidOwner, InvalidAccountOwner |
-| Jupiter | 10+ | SlippageExceeded, InvalidRoute |
-| Orca Whirlpools | 15+ | InvalidSqrtPriceLimitDirection |
-| Metaplex | 30+ | CandyMachineEmpty, InvalidMintAuthority |
-| SPL Token | 25+ | InsufficientFunds, OwnerMismatch |
-
-## Contributing
-
-We welcome contributions! This database grows with the Solana ecosystem.
-
-### Adding New Errors
-
-1. Fork the repository
-2. Add error codes to appropriate file in `src/`
-3. Follow the `ErrorInfo` interface
-4. Submit a pull request
-
-### Updating Patterns
-
-Found a common error scenario not covered? Add it to `error-patterns.ts`:
-
-```typescript
-{
-  keywords: ['your', 'error', 'keywords'],
-  category: 'Category Name',
-  likelyReason: 'Why this happens...',
-  quickFix: 'How to fix it...',
-  severity: 'high'
-}
+type ErrorSource =
+  | { type: "program-specific"; programId: string; programName: string }
+  | { type: "anchor-framework"; programId: string }
+  | { type: "token-program"; programId: string; programName: string };
 ```
 
 ## Development
 
-```bash
-# Clone the repo
-git clone https://github.com/tenequm/obsidian-protocol
+### Adding New Protocols
 
-# Install dependencies
-pnpm install
+1. Edit `src/protocols.config.ts`:
 
-# Build the package
-pnpm --filter @obsidian-debug/solana-errors build
-
-# Run type checks
-pnpm --filter @obsidian-debug/solana-errors type-check
+```typescript
+export const PROTOCOLS = [
+  // ... existing protocols
+  {
+    idlFileName: "my-protocol",
+    programId: "YourProgramID...",
+    fetchSource: "github", // or "anchor" for on-chain
+    githubUrl: "https://raw.githubusercontent.com/.../idl.json",
+    displayName: "My Protocol",
+    version: "1.0.0",
+  },
+] as const;
 ```
+
+2. Run generation:
+
+```bash
+pnpm generate  # Fetches IDL and auto-generates registration code
+pnpm build     # Build package
+```
+
+### Scripts
+
+```bash
+pnpm generate          # Fetch IDLs and generate code
+pnpm generate --force  # Re-fetch all IDLs
+pnpm build            # Build package
+pnpm type-check       # Type check
+```
+
+## Architecture
+
+```
+src/
+├── core/
+│   ├── types.ts          # Type definitions
+│   ├── protocol.ts       # Protocol class
+│   ├── registry.ts       # Global registry with hierarchical resolution
+│   └── builder.ts        # IDL → ErrorInfo conversion
+├── protocols.config.ts   # 👈 Single source of truth
+├── generated/
+│   └── protocols.ts      # Auto-generated (don't edit)
+└── index.ts              # Public API
+
+scripts/generate.ts       # IDL fetching + code generation
+idl/*.json               # Downloaded IDL files
+```
+
+**Design principles**:
+- Single source of truth (`protocols.config.ts`)
+- Auto-generated registration code
+- Immutable data structures
+- Type-safe interfaces
+
+## Contributing
+
+1. Fork the repo
+2. Add protocol to `src/protocols.config.ts`
+3. Run `pnpm generate && pnpm build`
+4. Create pull request
+
+Ensure IDLs are from official sources (GitHub or on-chain).
 
 ## License
 
 MIT © [Obsidian Debug Team]
-
-## Acknowledgments
-
-- Error data sourced from official documentation:
-  - [Anchor Framework](https://github.com/coral-xyz/anchor)
-  - [Solana Labs](https://github.com/solana-labs/solana)
-  - [Raydium](https://github.com/raydium-io/raydium-amm)
-  - [Jupiter](https://station.jup.ag/)
-  - [Orca](https://github.com/orca-so/whirlpools)
-  - [Metaplex](https://github.com/metaplex-foundation)
-
-## Related Projects
-
-- [Obsidian Debug](https://github.com/tenequm/obsidian-protocol) - AI-powered Solana transaction debugger
-- [Solana Cookbook](https://solanacookbook.com/) - Developer resources for Solana
-
----
-
-**Built for the Solana community** 🌊
-
-Issues? [Report them here](https://github.com/tenequm/obsidian-protocol/issues)
