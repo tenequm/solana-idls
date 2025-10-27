@@ -10,7 +10,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { $, chalk } from "zx";
 import {
-  getFetchableProtocols,
+  getIdlBasedProtocols,
   type ProtocolConfig,
 } from "../src/protocols.config";
 
@@ -164,6 +164,34 @@ async function fetchFromAnchor(program: ProtocolConfig): Promise<FetchResult> {
   }
 }
 
+function validateLocal(program: ProtocolConfig): FetchResult {
+  const idlPath = getIdlPath(program.idlFileName);
+
+  if (!fs.existsSync(idlPath)) {
+    return {
+      program,
+      status: "failed",
+      message: "IDL file not found (must be copied manually to idl/ directory)",
+    };
+  }
+
+  const validation = validateIdl(idlPath);
+  if (!validation.valid) {
+    return {
+      program,
+      status: "failed",
+      message: "Invalid IDL structure (no errors array)",
+    };
+  }
+
+  return {
+    program,
+    status: "success",
+    message: "Using local IDL",
+    errorCount: validation.errorCount,
+  };
+}
+
 async function fetchFromGitHub(program: ProtocolConfig): Promise<FetchResult> {
   if (!program.githubUrl) {
     return {
@@ -246,7 +274,7 @@ function generateProtocolsFile(): string {
   const imports: string[] = [];
   const idlMapEntries: string[] = [];
 
-  const protocols = getFetchableProtocols();
+  const protocols = getIdlBasedProtocols();
 
   // Generate imports and IDL map entries
   for (const protocol of protocols) {
@@ -332,6 +360,12 @@ function registerProtocol(config: typeof PROTOCOLS[number]): void {
       type: "on-chain" as const,
       fetchedAt: new Date().toISOString(),
     };
+  } else if (config.fetchSource === "local") {
+    idlSource = {
+      type: "github" as const,
+      url: "pre-copied from reference repository",
+      commit: "N/A",
+    };
   }
 
   const protocol = new Protocol({
@@ -367,10 +401,10 @@ async function main() {
     console.log(chalk.yellow("⚠️  Force mode enabled - re-fetching all IDLs\n"));
   }
 
-  // Step 1: Fetch IDLs
-  console.log(chalk.bold("📥 Step 1: Fetching IDLs\n"));
+  // Step 1: Fetch/Validate IDLs
+  console.log(chalk.bold("📥 Step 1: Fetching/Validating IDLs\n"));
 
-  const protocols = getFetchableProtocols();
+  const protocols = getIdlBasedProtocols();
   console.log(
     `📋 Found ${protocols.length} protocols from ${chalk.cyan("protocols.config.ts")}\n`
   );
@@ -392,6 +426,8 @@ async function main() {
       result = await fetchFromAnchor(program);
     } else if (program.fetchSource === "github") {
       result = await fetchFromGitHub(program);
+    } else if (program.fetchSource === "local") {
+      result = validateLocal(program);
     } else {
       result = {
         program,
