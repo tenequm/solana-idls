@@ -1,7 +1,7 @@
 /**
- * @obsidian-debug/solana-errors
+ * solana-idls
  *
- * Type-safe Solana error database with IDL-based accuracy
+ * Type-safe Solana IDL database with error, instruction, and account resolution
  *
  * @packageDocumentation
  */

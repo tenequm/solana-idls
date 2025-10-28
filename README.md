@@ -1,11 +1,56 @@
-# @obsidian-debug/solana-errors
+# solana-idls
 
-> Type-safe Solana error database extracted from program IDLs
+> Type-safe Solana IDL database with error, instruction, and account resolution
 
-[![npm version](https://img.shields.io/npm/v/@obsidian-debug/solana-errors.svg)](https://www.npmjs.com/package/@obsidian-debug/solana-errors)
+[![npm version](https://img.shields.io/npm/v/solana-idls.svg)](https://www.npmjs.com/package/solana-idls)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Maps Solana program error codes to human-readable names and descriptions. All errors are extracted directly from official IDLs for 100% accuracy.
+Comprehensive Solana IDL database providing error codes, instruction names, and account metadata from 41+ protocols. All data extracted directly from official IDLs for 100% accuracy.
+
+## What's Included
+
+This package provides three types of resolution:
+
+1. **Error Resolution** - 1,786 error definitions from 41 protocols
+   - Maps error codes (e.g., 6001) to names ("SlippageToleranceExceeded")
+   - Includes descriptions and documentation from IDLs
+
+2. **Instruction Resolution** - Semantic instruction names
+   - Maps discriminators to instruction names
+   - Provides account metadata with semantic roles
+
+3. **Program Identification** - Protocol names and metadata
+   - Maps program IDs to human-readable names
+   - Includes version information
+
+## Why Use This Package?
+
+**Problem:** Solana transaction data is machine-readable but not human-understandable
+- Error code `0x1771` means nothing to developers
+- Instruction bytes `[0xd0, 0x66...]` is cryptic
+- Program ID `JUP6Lkb...` doesn't tell you it's Jupiter
+
+**Solution:** This package is the semantic layer between raw blockchain data and human meaning
+- `0x1771` → `"SlippageToleranceExceeded: Output below minimum"`
+- Discriminator → `"swap" instruction`
+- Program ID → `"Jupiter Aggregator v6"`
+
+**vs Other Solutions:**
+| Solution | Provides IDLs? | Provides Resolution API? | Protocol Count |
+|----------|----------------|-------------------------|----------------|
+| `@solana-developers/helpers` | ❌ | ✅ (you provide arrays) | 0 (you build them) |
+| DeBridge parser | ❌ (you provide) | ✅ (parses instructions) | 0 (you provide IDLs) |
+| DeployDAO index | ✅ (30 protocols) | ❌ (just raw files) | 30 (older protocols) |
+| `solana-idl` (lukks) | ✅ (7 protocols) | ❌ (just raw files) | 7 (Raydium + Pump) |
+| **solana-idls** | ✅ (41 protocols) | ✅ (full API) | 41 (modern DeFi) |
+
+## Who Should Use This?
+
+- **Transaction Debuggers** - Resolve error codes to actionable fixes
+- **Block Explorers** - Display human-readable error messages
+- **Wallet Developers** - Show users why transactions failed
+- **AI Agents** - Provide context for transaction analysis
+- **Dev Tools** - Enrich transaction data with semantic meaning
 
 ## Features
 
@@ -67,13 +112,13 @@ Maps Solana program error codes to human-readable names and descriptions. All er
 ## Installation
 
 ```bash
-npm install @obsidian-debug/solana-errors
+npm install solana-idls
 ```
 
 ## Quick Start
 
 ```typescript
-import { registry } from '@obsidian-debug/solana-errors';
+import { registry } from 'solana-idls';
 
 // Resolve error by program ID and error code
 const error = registry.resolve(
@@ -138,7 +183,7 @@ results.forEach(({ protocol, error }) => {
 
 ```typescript
 import { Connection } from '@solana/web3.js';
-import { registry } from '@obsidian-debug/solana-errors';
+import { registry } from 'solana-idls';
 
 async function debugTransaction(signature: string) {
   const connection = new Connection('https://api.mainnet-beta.solana.com');

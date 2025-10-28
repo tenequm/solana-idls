@@ -1,7 +1,7 @@
 {
-  "name": "@obsidian-debug/solana-errors",
+  "name": "solana-idls",
   "version": "0.1.0",
-  "description": "Comprehensive Solana error code database covering runtime, Anchor, and popular programs",
+  "description": "Comprehensive Solana IDL database with errors, instructions, and account metadata from 41+ protocols",
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
@@ -33,7 +33,10 @@
   "license": "MIT",
   "keywords": [
     "solana",
+    "idl",
     "errors",
+    "instructions",
+    "accounts",
     "anchor",
     "blockchain",
     "error-codes",
