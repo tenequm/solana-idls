@@ -1,6 +1,6 @@
 {
   "name": "solana-idls",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Comprehensive Solana IDL database with errors, instructions, and account metadata from 41+ protocols",
   "main": "./dist/index.js",
   "scripts": {
@@ -53,11 +53,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tenequm/obsidian-debug",
-    "directory": "packages/solana-errors"
+    "url": "https://github.com/tenequm/solana-idls"
   },
   "bugs": {
-    "url": "https://github.com/tenequm/obsidian-debug/issues"
+    "url": "https://github.com/tenequm/solana-idls/issues"
   },
-  "homepage": "https://github.com/tenequm/obsidian-debug/tree/main/packages/solana-errors#readme"
+  "homepage": "https://github.com/tenequm/solana-idls#readme"
 }

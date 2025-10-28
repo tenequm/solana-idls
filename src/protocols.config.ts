@@ -336,7 +336,7 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
   // NFT Marketplaces
   // ============================================================================
   {
-    idlFileName: "magic-eden-v2",
+    idlFileName: "magiceden-v2",
     programId: "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K",
     fetchSource: "anchor",
     displayName: "Magic Eden V2",
@@ -465,7 +465,7 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
     notes: "Native Solana token standard",
   },
   {
-    idlFileName: "token-2022",
+    idlFileName: "spl-token-2022",
     programId: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
     type: "token-program",
     fetchSource: "github",

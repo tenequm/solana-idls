@@ -1,5 +1,7 @@
 # solana-idls
 
+> 📺 **See it in action:** [Obsidian Debug](https://soldebug.dev) uses this library to resolve Solana transaction errors in real-time.
+
 > Type-safe Solana IDL database with error, instruction, and account resolution
 
 [![npm version](https://img.shields.io/npm/v/solana-idls.svg)](https://www.npmjs.com/package/solana-idls)
@@ -7,58 +9,15 @@
 
 Comprehensive Solana IDL database providing error codes, instruction names, and account metadata from 41+ protocols. All data extracted directly from official IDLs for 100% accuracy.
 
-## What's Included
-
-This package provides three types of resolution:
-
-1. **Error Resolution** - 1,786 error definitions from 41 protocols
-   - Maps error codes (e.g., 6001) to names ("SlippageToleranceExceeded")
-   - Includes descriptions and documentation from IDLs
-
-2. **Instruction Resolution** - Semantic instruction names
-   - Maps discriminators to instruction names
-   - Provides account metadata with semantic roles
-
-3. **Program Identification** - Protocol names and metadata
-   - Maps program IDs to human-readable names
-   - Includes version information
-
-## Why Use This Package?
-
-**Problem:** Solana transaction data is machine-readable but not human-understandable
-- Error code `0x1771` means nothing to developers
-- Instruction bytes `[0xd0, 0x66...]` is cryptic
-- Program ID `JUP6Lkb...` doesn't tell you it's Jupiter
-
-**Solution:** This package is the semantic layer between raw blockchain data and human meaning
-- `0x1771` → `"SlippageToleranceExceeded: Output below minimum"`
-- Discriminator → `"swap" instruction`
-- Program ID → `"Jupiter Aggregator v6"`
-
-**vs Other Solutions:**
-| Solution | Provides IDLs? | Provides Resolution API? | Protocol Count |
-|----------|----------------|-------------------------|----------------|
-| `@solana-developers/helpers` | ❌ | ✅ (you provide arrays) | 0 (you build them) |
-| DeBridge parser | ❌ (you provide) | ✅ (parses instructions) | 0 (you provide IDLs) |
-| DeployDAO index | ✅ (30 protocols) | ❌ (just raw files) | 30 (older protocols) |
-| `solana-idl` (lukks) | ✅ (7 protocols) | ❌ (just raw files) | 7 (Raydium + Pump) |
-| **solana-idls** | ✅ (41 protocols) | ✅ (full API) | 41 (modern DeFi) |
-
-## Who Should Use This?
-
-- **Transaction Debuggers** - Resolve error codes to actionable fixes
-- **Block Explorers** - Display human-readable error messages
-- **Wallet Developers** - Show users why transactions failed
-- **AI Agents** - Provide context for transaction analysis
-- **Dev Tools** - Enrich transaction data with semantic meaning
-
 ## Features
 
-- **IDL-based accuracy** - Extracted directly from official program IDLs
-- **Type-safe** - Full TypeScript support with immutable types
+- **1,786 errors** from 41 Solana protocols
+- **Error resolution** - Map error codes to names and descriptions
+- **Instruction resolution** - Discriminator → instruction name + account metadata
+- **Program identification** - Program ID → protocol name
+- **Hierarchical fallback** - Program-specific errors + Anchor framework
+- **Type-safe** - Full TypeScript support
 - **Zero config** - Works out of the box
-- **Hierarchical resolution** - Program-specific errors + Anchor framework fallback
-- **Easy maintenance** - Single config file, auto-generated code
 
 ## Protocol Coverage
 
@@ -277,41 +236,9 @@ pnpm build            # Build package
 pnpm type-check       # Type check
 ```
 
-## Architecture
-
-```
-src/
-├── core/
-│   ├── types.ts          # Type definitions
-│   ├── protocol.ts       # Protocol class
-│   ├── registry.ts       # Global registry with hierarchical resolution
-│   └── builder.ts        # IDL → ErrorInfo conversion
-├── protocols.config.ts   # 👈 Single source of truth
-├── generated/
-│   └── protocols.ts      # Auto-generated (don't edit)
-└── index.ts              # Public API
-
-scripts/generate.ts       # IDL fetching + code generation
-idl/*.json               # Downloaded IDL files
-```
-
-**Design principles**:
-- Single source of truth (`protocols.config.ts`)
-- Auto-generated registration code
-- Immutable data structures
-- Type-safe interfaces
-
-
-## References:
-1. https://github.com/pinax-network/substreams-solana-idls
-2. https://github.com/bitquery/solana-idl-lib
-3. https://github.com/FixedLocally/sandwich-finder/blob/89e85f09e2d5ee0b23aeaef7a7ad9bb8cc7edca7/sandwich-finder/src/events/addresses.rs#L25
-4. https://github.com/duneanalytics/spellbook/blob/3677f6bedbc30dc2b1024db6572ab1fc20973c32/dbt_subprojects/solana/models/jupiter/jupiter_solana_aggregator_swaps.sql
-5. https://github.com/okxlabs/DEX-Router-Solana-V1/blob/ab251be839ce1ccd311eaffaee47eddb86f6d239/programs/dex-solana/src/constants.rs#L342
-
 ## Contributing
 
-1. Fork the repo
+1. Fork the repo: https://github.com/tenequm/solana-idls
 2. Add protocol to `src/protocols.config.ts`
 3. Run `pnpm generate && pnpm build`
 4. Create pull request

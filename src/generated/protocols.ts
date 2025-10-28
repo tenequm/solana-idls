@@ -42,7 +42,7 @@ import bonkswapIdl from "../../idl/bonkswap.json" with { type: "json" };
 import aldrin_clobIdl from "../../idl/aldrin-clob.json" with { type: "json" };
 import drift_v2Idl from "../../idl/drift-v2.json" with { type: "json" };
 import ton_whales_holdersIdl from "../../idl/ton-whales-holders.json" with { type: "json" };
-import magic_eden_v2Idl from "../../idl/magic-eden-v2.json" with { type: "json" };
+import magiceden_v2Idl from "../../idl/magiceden-v2.json" with { type: "json" };
 import tensorIdl from "../../idl/tensor.json" with { type: "json" };
 import metaplex_auction_houseIdl from "../../idl/metaplex-auction-house.json" with { type: "json" };
 import metaplex_token_metadataIdl from "../../idl/metaplex-token-metadata.json" with { type: "json" };
@@ -55,7 +55,7 @@ import metaplex_token_entanglerIdl from "../../idl/metaplex-token-entangler.json
 import metaplex_auctioneerIdl from "../../idl/metaplex-auctioneer.json" with { type: "json" };
 import obric_v2Idl from "../../idl/obric-v2.json" with { type: "json" };
 import spl_tokenIdl from "../../idl/spl-token.json" with { type: "json" };
-import token_2022Idl from "../../idl/token-2022.json" with { type: "json" };
+import spl_token_2022Idl from "../../idl/spl-token-2022.json" with { type: "json" };
 import spl_token_swapIdl from "../../idl/spl-token-swap.json" with { type: "json" };
 
 /**
@@ -88,7 +88,7 @@ const IDL_MAP: Record<string, unknown> = {
   "aldrin-clob": aldrin_clobIdl,
   "drift-v2": drift_v2Idl,
   "ton-whales-holders": ton_whales_holdersIdl,
-  "magic-eden-v2": magic_eden_v2Idl,
+  "magiceden-v2": magiceden_v2Idl,
   "tensor": tensorIdl,
   "metaplex-auction-house": metaplex_auction_houseIdl,
   "metaplex-token-metadata": metaplex_token_metadataIdl,
@@ -101,7 +101,7 @@ const IDL_MAP: Record<string, unknown> = {
   "metaplex-auctioneer": metaplex_auctioneerIdl,
   "obric-v2": obric_v2Idl,
   "spl-token": spl_tokenIdl,
-  "token-2022": token_2022Idl,
+  "spl-token-2022": spl_token_2022Idl,
   "spl-token-swap": spl_token_swapIdl,
 };
 

@@ -1,0 +1,35 @@
+# Source files (don't publish to npm)
+src/
+scripts/
+idl/
+
+# Config files
+tsconfig.json
+.gitignore
+.git/
+
+# Dev files
+.turbo/
+node_modules/
+.pnpm-store/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Test files
+*.test.ts
+*.test.js
+
+# Keep these in published package:
+# dist/
+# README.md
+# LICENSE
+# package.json
+# CHANGELOG.md

@@ -672,7 +672,7 @@ var PROTOCOLS = [
   // NFT Marketplaces
   // ============================================================================
   {
-    idlFileName: "magic-eden-v2",
+    idlFileName: "magiceden-v2",
     programId: "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K",
     fetchSource: "anchor",
     displayName: "Magic Eden V2",
@@ -797,7 +797,7 @@ var PROTOCOLS = [
     notes: "Native Solana token standard"
   },
   {
-    idlFileName: "token-2022",
+    idlFileName: "spl-token-2022",
     programId: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
     type: "token-program",
     fetchSource: "github",
@@ -97167,8 +97167,8 @@ var ton_whales_holders_default = {
   ]
 };
 
-// idl/magic-eden-v2.json
-var magic_eden_v2_default = {
+// idl/magiceden-v2.json
+var magiceden_v2_default = {
   accounts: [
     {
       name: "BuyerTradeState",
@@ -122710,8 +122710,8 @@ var spl_token_default = {
   version: "1.0.0"
 };
 
-// idl/token-2022.json
-var token_2022_default = {
+// idl/spl-token-2022.json
+var spl_token_2022_default = {
   kind: "rootNode",
   standard: "codama",
   version: "1.0.0",
@@ -134322,7 +134322,7 @@ var IDL_MAP = {
   "aldrin-clob": aldrin_clob_default,
   "drift-v2": drift_v2_default,
   "ton-whales-holders": ton_whales_holders_default,
-  "magic-eden-v2": magic_eden_v2_default,
+  "magiceden-v2": magiceden_v2_default,
   "tensor": tensor_default,
   "metaplex-auction-house": metaplex_auction_house_default,
   "metaplex-token-metadata": metaplex_token_metadata_default,
@@ -134335,7 +134335,7 @@ var IDL_MAP = {
   "metaplex-auctioneer": metaplex_auctioneer_default,
   "obric-v2": obric_v2_default,
   "spl-token": spl_token_default,
-  "token-2022": token_2022_default,
+  "spl-token-2022": spl_token_2022_default,
   "spl-token-swap": spl_token_swap_default
 };
 function registerProtocol(config) {
