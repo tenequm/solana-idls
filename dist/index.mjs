@@ -36,6 +36,86 @@ function buildProtocolErrors(idl) {
   }
   return Object.freeze(result);
 }
+function normalizeAccount(account) {
+  let writable;
+  if ("writable" in account) {
+    writable = account.writable;
+  } else if ("isMut" in account) {
+    writable = account.isMut;
+  } else if ("isWritable" in account) {
+    writable = account.isWritable;
+  }
+  let signer;
+  if ("signer" in account) {
+    signer = account.signer;
+  } else if ("isSigner" in account) {
+    signer = account.isSigner;
+  }
+  let optional;
+  if ("optional" in account) {
+    optional = account.optional;
+  } else if ("isOptional" in account) {
+    optional = account.isOptional;
+  }
+  return {
+    name: account.name,
+    ...writable !== void 0 && { writable },
+    ...signer !== void 0 && { signer },
+    ...optional !== void 0 && { optional },
+    ...account.docs && { docs: account.docs }
+  };
+}
+function extractSolanaProgramInstructions(instructions) {
+  return instructions.filter(
+    (inst) => typeof inst === "object" && inst !== null && "name" in inst && typeof inst.name === "string" && "accounts" in inst && Array.isArray(inst.accounts)
+  ).map((inst, index) => ({
+    name: inst.name,
+    discriminator: inst.discriminator ? Array.from(inst.discriminator) : void 0,
+    accounts: inst.accounts.map(normalizeAccount),
+    position: index
+  }));
+}
+function extractAnchorInstructions(instructions) {
+  return instructions.filter(
+    (inst) => typeof inst === "object" && inst !== null && "name" in inst && typeof inst.name === "string" && "accounts" in inst && Array.isArray(inst.accounts)
+  ).map((inst, index) => ({
+    name: inst.name,
+    discriminator: inst.discriminator ? Array.from(inst.discriminator) : void 0,
+    accounts: inst.accounts.map(normalizeAccount),
+    position: index
+    // Store position for protocols without discriminators
+  }));
+}
+function extractInstructionsFromIdl(idl) {
+  if (isSolanaProgramIdl(idl)) {
+    const programIdl = idl;
+    if ("instructions" in programIdl.program && Array.isArray(programIdl.program.instructions)) {
+      return extractSolanaProgramInstructions(programIdl.program.instructions);
+    }
+  }
+  if (isValidIdl(idl) && "instructions" in idl && Array.isArray(idl.instructions)) {
+    return extractAnchorInstructions(
+      idl.instructions
+    );
+  }
+  return [];
+}
+function buildProtocolInstructions(idl) {
+  const instructions = extractInstructionsFromIdl(idl);
+  const result = {};
+  for (const instruction of instructions) {
+    if (instruction.discriminator && instruction.discriminator.length === 8) {
+      const discriminatorHex = Buffer.from(instruction.discriminator).toString(
+        "hex"
+      );
+      result[discriminatorHex] = Object.freeze(instruction);
+    }
+    if (instruction.position !== void 0) {
+      result[`pos:${instruction.position}`] = Object.freeze(instruction);
+    }
+  }
+  return Object.freeze(result);
+}
 
 // src/core/protocol.ts
 var Protocol = class {
@@ -43,12 +123,14 @@ var Protocol = class {
   programId;
   version;
   errors;
+  instructions;
   metadata;
   constructor(config) {
     this.name = config.name;
     this.programId = config.programId;
     this.version = config.version;
     this.errors = config.errors;
+    this.instructions = config.instructions ?? {};
     this.metadata = {
       name: config.name,
       programId: config.programId,
@@ -95,6 +177,62 @@ var Protocol = class {
     const lowerQuery = query.toLowerCase();
     return Object.values(this.errors).filter(
       (error) => error.name.toLowerCase().includes(lowerQuery) || error.description.toLowerCase().includes(lowerQuery)
+    );
+  }
+  // ============================================================================
+  // Instruction Methods
+  // ============================================================================
+  /**
+   * Get instruction by discriminator (for modern Anchor programs)
+   *
+   * @param discriminator - 8-byte discriminator as Buffer, Uint8Array, number array, or hex string
+   * @returns Instruction info or null if not found
+   */
+  getInstruction(discriminator) {
+    const key = typeof discriminator === "string" ? discriminator : Buffer.from(discriminator).toString("hex");
+    return this.instructions[key] ?? null;
+  }
+  /**
+   * Get instruction by position (for old Anchor programs without discriminators)
+   *
+   * @param position - Instruction index in the IDL
+   * @returns Instruction info or null if not found
+   */
+  getInstructionByPosition(position) {
+    return this.instructions[`pos:${position}`] ?? null;
+  }
+  /**
+   * Get all instructions for this protocol
+   */
+  getAllInstructions() {
+    const seen = /* @__PURE__ */ new Set();
+    return Object.values(this.instructions).filter((inst) => {
+      if (seen.has(inst.name)) {
+        return false;
+      }
+      seen.add(inst.name);
+      return true;
+    });
+  }
+  /**
+   * Get instruction count
+   */
+  getInstructionCount() {
+    return this.getAllInstructions().length;
+  }
+  /**
+   * Check if protocol has instruction data
+   */
+  hasInstructions() {
+    return Object.keys(this.instructions).length > 0;
+  }
+  /**
+   * Search instructions by name
+   */
+  searchInstructions(query) {
+    const lowerQuery = query.toLowerCase();
+    return this.getAllInstructions().filter(
+      (inst) => inst.name.toLowerCase().includes(lowerQuery)
     );
   }
 };
@@ -167,6 +305,37 @@ var ProtocolRegistry = class {
       }
     }
     return null;
+  }
+  // ============================================================================
+  // Instruction Resolution
+  // ============================================================================
+  /**
+   * Resolve instruction by program ID and discriminator
+   *
+   * @param programId - Program ID to look up
+   * @param discriminator - 8-byte instruction discriminator as Buffer, Uint8Array, number array, or hex string
+   * @returns Instruction info or null if not found
+   */
+  resolveInstruction(programId, discriminator) {
+    const protocol = this.programIdIndex.get(programId);
+    if (!protocol) {
+      return null;
+    }
+    return protocol.getInstruction(discriminator);
+  }
+  /**
+   * Resolve instruction by program ID and position (for old Anchor programs without discriminators)
+   *
+   * @param programId - Program ID to look up
+   * @param position - Instruction index in the transaction
+   * @returns Instruction info or null if not found
+   */
+  resolveInstructionByPosition(programId, position) {
+    const protocol = this.programIdIndex.get(programId);
+    if (!protocol) {
+      return null;
+    }
+    return protocol.getInstructionByPosition(position);
   }
   /**
    * Get protocol by name
@@ -134161,6 +134330,7 @@ function registerProtocol(config) {
     throw new Error(`No IDL found for ${config.idlFileName}`);
   }
   const errors = buildProtocolErrors(idl);
+  const instructions = buildProtocolInstructions(idl);
   let idlSource;
   if (config.fetchSource === "github") {
     if (!config.githubUrl) {
@@ -134188,6 +134358,7 @@ function registerProtocol(config) {
     programId: config.programId,
     version: config.version,
     errors,
+    instructions,
     idlSource,
     lastVerified: (/* @__PURE__ */ new Date()).toISOString().split("T")[0]
   });

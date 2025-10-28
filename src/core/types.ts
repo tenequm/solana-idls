@@ -71,3 +71,30 @@ export type ProtocolMetadata = {
   readonly idlSource?: IdlSource;
   readonly lastVerified?: string;
 };
+
+/**
+ * Instruction account metadata from IDL
+ * Supports both Anchor formats (old/new) and Solana Program format
+ */
+export type InstructionAccount = {
+  readonly name: string;
+  readonly writable?: boolean;
+  readonly signer?: boolean;
+  readonly optional?: boolean;
+  readonly docs?: readonly string[];
+};
+
+/**
+ * Instruction definition extracted from IDL
+ *
+ * Supports three IDL formats:
+ * - Modern Anchor: Has discriminator (8-byte SHA256 hash of instruction name)
+ * - Old Anchor: No discriminator, position-based matching only
+ * - Solana Program: Has discriminator, nested under .program
+ */
+export type InstructionInfo = {
+  readonly name: string;
+  readonly discriminator?: readonly number[]; // 8-byte array for modern Anchor/Solana Program
+  readonly accounts: readonly InstructionAccount[];
+  readonly position?: number; // Index in IDL for protocols without discriminators
+};

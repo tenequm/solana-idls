@@ -70,9 +70,34 @@ type ProtocolMetadata = {
     readonly idlSource?: IdlSource;
     readonly lastVerified?: string;
 };
+/**
+ * Instruction account metadata from IDL
+ * Supports both Anchor formats (old/new) and Solana Program format
+ */
+type InstructionAccount = {
+    readonly name: string;
+    readonly writable?: boolean;
+    readonly signer?: boolean;
+    readonly optional?: boolean;
+    readonly docs?: readonly string[];
+};
+/**
+ * Instruction definition extracted from IDL
+ *
+ * Supports three IDL formats:
+ * - Modern Anchor: Has discriminator (8-byte SHA256 hash of instruction name)
+ * - Old Anchor: No discriminator, position-based matching only
+ * - Solana Program: Has discriminator, nested under .program
+ */
+type InstructionInfo = {
+    readonly name: string;
+    readonly discriminator?: readonly number[];
+    readonly accounts: readonly InstructionAccount[];
+    readonly position?: number;
+};
 
 /**
- * Protocol class representing a Solana program's error database
+ * Protocol class representing a Solana program's error and instruction database
  */
 
 interface ProtocolConfig {
@@ -80,6 +105,7 @@ interface ProtocolConfig {
     programId: string;
     version: string;
     errors: Record<number, Omit<ErrorInfo, "source">>;
+    instructions?: Record<string, InstructionInfo>;
     idlSource?: ProtocolMetadata["idlSource"];
     lastVerified?: string;
 }
@@ -88,6 +114,7 @@ declare class Protocol {
     readonly programId: string;
     readonly version: string;
     private readonly errors;
+    private readonly instructions;
     private readonly metadata;
     constructor(config: ProtocolConfig);
     /**
@@ -115,10 +142,40 @@ declare class Protocol {
      * Search errors by name or description (without source metadata)
      */
     searchErrors(query: string): Omit<ErrorInfo, "source">[];
+    /**
+     * Get instruction by discriminator (for modern Anchor programs)
+     *
+     * @param discriminator - 8-byte discriminator as Buffer, Uint8Array, number array, or hex string
+     * @returns Instruction info or null if not found
+     */
+    getInstruction(discriminator: Buffer | Uint8Array | number[] | string): InstructionInfo | null;
+    /**
+     * Get instruction by position (for old Anchor programs without discriminators)
+     *
+     * @param position - Instruction index in the IDL
+     * @returns Instruction info or null if not found
+     */
+    getInstructionByPosition(position: number): InstructionInfo | null;
+    /**
+     * Get all instructions for this protocol
+     */
+    getAllInstructions(): readonly InstructionInfo[];
+    /**
+     * Get instruction count
+     */
+    getInstructionCount(): number;
+    /**
+     * Check if protocol has instruction data
+     */
+    hasInstructions(): boolean;
+    /**
+     * Search instructions by name
+     */
+    searchInstructions(query: string): InstructionInfo[];
 }
 
 /**
- * Global protocol registry for error resolution
+ * Global protocol registry for error and instruction resolution
  */
 
 declare class ProtocolRegistry {
@@ -144,6 +201,22 @@ declare class ProtocolRegistry {
      * Enriches errors with source metadata for transparency
      */
     resolve(programId: string, code: number): ErrorInfo | null;
+    /**
+     * Resolve instruction by program ID and discriminator
+     *
+     * @param programId - Program ID to look up
+     * @param discriminator - 8-byte instruction discriminator as Buffer, Uint8Array, number array, or hex string
+     * @returns Instruction info or null if not found
+     */
+    resolveInstruction(programId: string, discriminator: Buffer | Uint8Array | number[] | string): InstructionInfo | null;
+    /**
+     * Resolve instruction by program ID and position (for old Anchor programs without discriminators)
+     *
+     * @param programId - Program ID to look up
+     * @param position - Instruction index in the transaction
+     * @returns Instruction info or null if not found
+     */
+    resolveInstructionByPosition(programId: string, position: number): InstructionInfo | null;
     /**
      * Get protocol by name
      */

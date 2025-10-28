@@ -1,9 +1,9 @@
 /**
- * Global protocol registry for error resolution
+ * Global protocol registry for error and instruction resolution
  */
 
 import type { Protocol } from "./protocol";
-import type { ErrorInfo, ProtocolMetadata } from "./types";
+import type { ErrorInfo, InstructionInfo, ProtocolMetadata } from "./types";
 
 class ProtocolRegistry {
   private readonly protocols = new Map<string, Protocol>();
@@ -86,6 +86,48 @@ class ProtocolRegistry {
     }
 
     return null;
+  }
+
+  // ============================================================================
+  // Instruction Resolution
+  // ============================================================================
+
+  /**
+   * Resolve instruction by program ID and discriminator
+   *
+   * @param programId - Program ID to look up
+   * @param discriminator - 8-byte instruction discriminator as Buffer, Uint8Array, number array, or hex string
+   * @returns Instruction info or null if not found
+   */
+  resolveInstruction(
+    programId: string,
+    discriminator: Buffer | Uint8Array | number[] | string
+  ): InstructionInfo | null {
+    const protocol = this.programIdIndex.get(programId);
+    if (!protocol) {
+      return null;
+    }
+
+    return protocol.getInstruction(discriminator);
+  }
+
+  /**
+   * Resolve instruction by program ID and position (for old Anchor programs without discriminators)
+   *
+   * @param programId - Program ID to look up
+   * @param position - Instruction index in the transaction
+   * @returns Instruction info or null if not found
+   */
+  resolveInstructionByPosition(
+    programId: string,
+    position: number
+  ): InstructionInfo | null {
+    const protocol = this.programIdIndex.get(programId);
+    if (!protocol) {
+      return null;
+    }
+
+    return protocol.getInstructionByPosition(position);
   }
 
   /**

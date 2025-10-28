@@ -5,7 +5,7 @@
  * Run `pnpm generate` to regenerate
  */
 
-import { buildProtocolErrors } from "../core/builder";
+import { buildProtocolErrors, buildProtocolInstructions } from "../core/builder";
 import { Protocol } from "../core/protocol";
 import { registry } from "../core/registry";
 import type { IdlSource } from "../core/types";
@@ -136,6 +136,7 @@ function registerProtocol(config: typeof PROTOCOLS[number]): void {
     throw new Error(`No IDL found for ${config.idlFileName}`);
   }
   const errors = buildProtocolErrors(idl);
+  const instructions = buildProtocolInstructions(idl);
 
   // Determine IDL source
   let idlSource: IdlSource | undefined;
@@ -166,6 +167,7 @@ function registerProtocol(config: typeof PROTOCOLS[number]): void {
     programId: config.programId,
     version: config.version,
     errors,
+    instructions,
     idlSource,
     lastVerified: new Date().toISOString().split("T")[0],
   });

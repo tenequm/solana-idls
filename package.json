@@ -12,6 +12,7 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",
     "yaml": "^2.8.1",
