@@ -81,6 +81,7 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
       "https://raw.githubusercontent.com/jup-ag/jupiter-cpi-swap-example/b0c59b7ac537c47e9502391d83f8926ffffa412e/cpi-swap-program/idls/jupiter_aggregator.json",
     displayName: "Jupiter Aggregator v6",
     version: "0.1.0",
+    notes: "Anchor CLI can't fetch this IDL (panic error), using GitHub source",
   },
   {
     idlFileName: "jupiter-v4",
@@ -127,7 +128,7 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
     programId: "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
     fetchSource: "anchor",
     displayName: "Orca Whirlpools",
-    version: "1.0.0",
+    version: "0.3.6",
   },
 
   // ============================================================================
@@ -136,25 +137,25 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
   {
     idlFileName: "meteora-dlmm",
     programId: "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
-    fetchSource: "local",
+    fetchSource: "anchor",
     displayName: "Meteora DLMM",
-    version: "0.5.1",
+    version: "0.10.0",
     notes: "Dynamic liquidity market maker",
   },
   {
     idlFileName: "meteora-amm",
     programId: "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB",
-    fetchSource: "local",
+    fetchSource: "anchor",
     displayName: "Meteora AMM",
-    version: "0.4.12",
+    version: "0.5.3",
     notes: "Automated market maker pools",
   },
   {
     idlFileName: "meteora-cp-amm",
     programId: "cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG",
-    fetchSource: "local",
+    fetchSource: "anchor",
     displayName: "Meteora CP AMM (DAMM V2)",
-    version: "0.1.1",
+    version: "0.1.5",
     notes: "Constant product AMM / Dynamic AMM V2",
   },
   {
@@ -197,7 +198,7 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
       "https://raw.githubusercontent.com/raydium-io/raydium-idl/refs/heads/master/raydium_cpmm/raydium_cp_swap.json",
     displayName: "Raydium CP Swap",
     version: "0.1.0",
-    notes: "Constant product swap",
+    notes: "Constant product swap (Anchor CLI can't fetch, using GitHub)",
   },
   {
     idlFileName: "raydium-launchpad",
@@ -314,9 +315,9 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
   {
     idlFileName: "drift-v2",
     programId: "dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH",
-    fetchSource: "local",
+    fetchSource: "anchor",
     displayName: "Drift V2",
-    version: "2.106.0",
+    version: "2.143.0",
     notes: "Perpetuals and derivatives platform",
   },
 
@@ -340,7 +341,7 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
     programId: "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K",
     fetchSource: "anchor",
     displayName: "Magic Eden V2",
-    version: "2.0.0",
+    version: "0.1.0",
     notes: "Leading Solana NFT marketplace",
   },
   {
@@ -348,7 +349,7 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
     programId: "TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN",
     fetchSource: "anchor",
     displayName: "Tensor",
-    version: "1.0.0",
+    version: "3.1.0",
     notes: "NFT marketplace and AMM",
   },
   {
@@ -403,9 +404,9 @@ export const PROTOCOLS: readonly ProtocolConfig[] = [
   {
     idlFileName: "metaplex-hydra",
     programId: "hyDQ4Nz1eYyegS6JfenyKwKzYxRsCWCriYSAjtzP4Vg",
-    fetchSource: "local",
+    fetchSource: "anchor",
     displayName: "Metaplex Hydra",
-    version: "0.3.0",
+    version: "0.4.1",
     notes: "Fanout wallet distribution",
   },
   {
