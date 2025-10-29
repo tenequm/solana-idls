@@ -1,5 +1,8 @@
 /**
  * Example: Using solana-idls with @debridge-finance/solana-transaction-parser
+ *
+ * This example shows clean, type-safe integration with the debridge parser.
+ * No type casting needed - IDLs are properly typed as Idl from @coral-xyz/anchor.
  */
 
 import { Connection } from "@solana/web3.js";
@@ -14,17 +17,14 @@ import {
   ORCA_WHIRLPOOLS_PROGRAM_ID,
 } from "solana-idls";
 
-// Initialize parser with IDLs
+// Initialize parser with IDLs - fully type-safe!
 const parser = new SolanaParser([
   {
-    idl: convertLegacyIdlToV30(JUPITER_IDL as any, JUPITER_PROGRAM_ID),
+    idl: convertLegacyIdlToV30(JUPITER_IDL, JUPITER_PROGRAM_ID),
     programId: JUPITER_PROGRAM_ID,
   },
   {
-    idl: convertLegacyIdlToV30(
-      ORCA_WHIRLPOOLS_IDL as any,
-      ORCA_WHIRLPOOLS_PROGRAM_ID
-    ),
+    idl: convertLegacyIdlToV30(ORCA_WHIRLPOOLS_IDL, ORCA_WHIRLPOOLS_PROGRAM_ID),
     programId: ORCA_WHIRLPOOLS_PROGRAM_ID,
   },
 ]);
@@ -52,9 +52,11 @@ async function main() {
   });
 
   // Show Jupiter route details
+  // Note: Even with typed IDLs, parser returns generic types
   const jupiterRoute = parsed.find((ix) => ix.name === "route");
   if (jupiterRoute && "args" in jupiterRoute) {
-    const args = jupiterRoute.args as any;
+    // Cast to specific shape for field name checking (better than 'as any')
+    const args = jupiterRoute.args as { route_plan: unknown[] };
     console.log(`\nJupiter route: ${args.route_plan.length} swap step(s)`);
   }
 }

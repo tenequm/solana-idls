@@ -1,5 +1,17 @@
 # solana-idls
 
+## 1.2.1
+
+### Patch Changes
+
+- Enhanced TypeScript type safety for IDL exports
+
+  - All IDL exports now properly typed as `Idl` from `@coral-xyz/anchor`
+  - Eliminates need for `as any` casting when using with parser libraries
+  - Improved example patterns with specific type assertions
+  - Updated documentation for peer dependency usage
+  - Better IntelliSense support for transaction parser integration
+
 ## 1.2.0
 
 ### Minor Changes

@@ -75,6 +75,14 @@ Comprehensive Solana IDL database providing error codes, instruction names, and 
 npm install solana-idls
 ```
 
+**For transaction parser integration** (recommended):
+
+```bash
+npm install solana-idls @coral-xyz/anchor
+```
+
+> **Note:** `@coral-xyz/anchor` is an optional peer dependency that provides full TypeScript type safety when using IDLs with parser libraries like `@debridge-finance/solana-transaction-parser`. While technically optional, it's **strongly recommended** for TypeScript projects and **required** for parser integration.
+
 ## Quick Start
 
 ```typescript
@@ -114,34 +122,37 @@ pnpm tsx error-lookup.ts
 
 ## IDL Objects for Transaction Parsers
 
-This library exports all IDL objects directly, making it compatible with transaction parsers like [@debridge-finance/solana-transaction-parser](https://github.com/debridge-finance/solana-tx-parser-public):
+This library exports all IDL objects directly with **full TypeScript type safety**, making it compatible with transaction parsers like [@debridge-finance/solana-transaction-parser](https://github.com/debridge-finance/solana-tx-parser-public):
 
 ```typescript
-import { JUPITER_IDL, ORCA_WHIRLPOOLS_IDL, IDL_MAP } from 'solana-idls';
-import { SolanaParser } from '@debridge-finance/solana-transaction-parser';
+import { JUPITER_IDL, JUPITER_PROGRAM_ID, ORCA_WHIRLPOOLS_IDL, ORCA_WHIRLPOOLS_PROGRAM_ID } from 'solana-idls';
+import { SolanaParser, convertLegacyIdlToV30 } from '@debridge-finance/solana-transaction-parser';
 
-// Use with debridge parser
+// ✅ Fully type-safe - no casting needed!
 const parser = new SolanaParser([
   {
-    idl: JUPITER_IDL,
-    programId: 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+    idl: convertLegacyIdlToV30(JUPITER_IDL, JUPITER_PROGRAM_ID),
+    programId: JUPITER_PROGRAM_ID
   },
   {
-    idl: ORCA_WHIRLPOOLS_IDL,
-    programId: 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
+    idl: convertLegacyIdlToV30(ORCA_WHIRLPOOLS_IDL, ORCA_WHIRLPOOLS_PROGRAM_ID),
+    programId: ORCA_WHIRLPOOLS_PROGRAM_ID
   }
 ]);
 
-// Parse transaction
-const parsed = await parser.parseTransaction(
-  connection,
-  'YOUR_TX_SIGNATURE'
-);
+// Parse transaction with full type inference
+const parsed = await parser.parseTransaction(connection, 'YOUR_TX_SIGNATURE');
 
 // Or use the IDL_MAP for dynamic access
 const jupiterIdl = IDL_MAP['jupiter'];
 const orcaIdl = IDL_MAP['orca-whirlpools'];
 ```
+
+**Type Safety:**
+- All IDL exports are typed as `Idl` from `@coral-xyz/anchor`
+- Zero type casting required - works seamlessly with parser libraries
+- Full IDE IntelliSense support for instruction names, accounts, and arguments
+- Install `@coral-xyz/anchor` to enable type checking
 
 **Available exports:**
 - Individual IDLs: `JUPITER_IDL`, `ORCA_WHIRLPOOLS_IDL`, `METEORA_DLMM_IDL`, etc.

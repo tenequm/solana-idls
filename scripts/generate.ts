@@ -413,7 +413,7 @@ function generateIdlsFile(): string {
     );
 
     exports.push(
-      `export const ${constName}_IDL = ${varName};`,
+      `export const ${constName}_IDL = ${varName} as unknown as Idl;`,
       `export const ${constName}_PROGRAM_ID = "${protocol.programId}" as const;\n`
     );
 
@@ -427,10 +427,13 @@ function generateIdlsFile(): string {
  * Run \`pnpm generate\` to regenerate
  *
  * Type Safety:
- * - IDLs are typed as Idl from @coral-xyz/anchor (optional peer dependency)
- * - Install @coral-xyz/anchor for full type safety: pnpm add @coral-xyz/anchor
- * - Works without Anchor for basic use cases
+ * - All IDL exports are typed as Idl from @coral-xyz/anchor
+ * - This enables full type inference when using with parser libraries
+ * - Install @coral-xyz/anchor for the Idl type: pnpm add @coral-xyz/anchor
+ * - Without @coral-xyz/anchor installed, you'll see type errors (but no runtime impact)
  */
+
+import type { Idl } from "@coral-xyz/anchor";
 
 // ============================================================================
 // IDL Imports (auto-generated)
