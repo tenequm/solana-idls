@@ -393,6 +393,68 @@ for (const config of PROTOCOLS) {
 }
 
 // ============================================================================
+// IDL Exports Generation
+// ============================================================================
+
+function generateIdlsFile(): string {
+  const imports: string[] = [];
+  const exports: string[] = [];
+  const mapEntries: string[] = [];
+
+  const protocols = getIdlBasedProtocols();
+
+  // Generate imports and exports for each protocol
+  for (const protocol of protocols) {
+    const varName = `${protocol.idlFileName.replace(/-/g, "_")}Idl`;
+    const constName = protocol.idlFileName.toUpperCase().replace(/-/g, "_");
+
+    imports.push(
+      `import ${varName} from "../../idl/${protocol.idlFileName}.json" with { type: "json" };`
+    );
+
+    exports.push(
+      `export const ${constName}_IDL = ${varName};`,
+      `export const ${constName}_PROGRAM_ID = "${protocol.programId}" as const;\n`
+    );
+
+    mapEntries.push(`  "${protocol.idlFileName}": ${constName}_IDL,`);
+  }
+
+  return `/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ *
+ * Generated from protocols.config.ts
+ * Run \`pnpm generate\` to regenerate
+ *
+ * Type Safety:
+ * - IDLs are typed as Idl from @coral-xyz/anchor (optional peer dependency)
+ * - Install @coral-xyz/anchor for full type safety: pnpm add @coral-xyz/anchor
+ * - Works without Anchor for basic use cases
+ */
+
+// ============================================================================
+// IDL Imports (auto-generated)
+// ============================================================================
+
+${imports.join("\n")}
+
+// ============================================================================
+// IDL Exports (auto-generated)
+// ============================================================================
+
+${exports.join("\n")}
+
+// ============================================================================
+// IDL Map
+// ============================================================================
+
+export const IDL_MAP = {
+${mapEntries.join("\n")}
+} as const;
+`;
+}
+
+// ============================================================================
 // Main
 // ============================================================================
 
@@ -472,22 +534,28 @@ async function main() {
     process.exit(1);
   }
 
-  // Step 2: Generate protocols.ts
-  console.log(chalk.bold("⚡ Step 2: Generating protocols.ts\n"));
+  // Step 2: Generate protocols.ts and idls.ts
+  console.log(chalk.bold("⚡ Step 2: Generating TypeScript files\n"));
 
   // Ensure generated directory exists
   if (!fs.existsSync(GENERATED_DIR)) {
     fs.mkdirSync(GENERATED_DIR, { recursive: true });
   }
 
-  const content = generateProtocolsFile();
-  fs.writeFileSync(OUTPUT_FILE, content, "utf8");
-
+  // Generate protocols.ts
+  const protocolsContent = generateProtocolsFile();
+  fs.writeFileSync(OUTPUT_FILE, protocolsContent, "utf8");
   console.log(
     `✅ Generated ${chalk.cyan(path.relative(ROOT_DIR, OUTPUT_FILE))}`
   );
-  console.log();
 
+  // Generate idls.ts
+  const IDLS_FILE = path.join(GENERATED_DIR, "idls.ts");
+  const idlsContent = generateIdlsFile();
+  fs.writeFileSync(IDLS_FILE, idlsContent, "utf8");
+  console.log(`✅ Generated ${chalk.cyan(path.relative(ROOT_DIR, IDLS_FILE))}`);
+
+  console.log();
   console.log(chalk.green.bold("✨ All done! Library is ready to use.\n"));
 }
 

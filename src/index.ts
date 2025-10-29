@@ -14,3 +14,5 @@ export { Protocol } from "./core/protocol";
 export { registry } from "./core/registry";
 // Re-export types
 export type { ErrorInfo, IdlError, ProtocolMetadata } from "./core/types";
+// Re-export all IDL objects
+export * from "./generated/idls";

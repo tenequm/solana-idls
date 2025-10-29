@@ -1,5 +1,57 @@
 # solana-idls
 
+## 1.2.0
+
+### Minor Changes
+
+- ## New Features
+
+  ### Examples Directory
+
+  Added three practical examples showing real-world usage patterns:
+
+  - **Basic Usage** - Direct IDL imports and inspection
+  - **Error Lookup** - Resolving error codes to human-readable messages
+  - **Transaction Parsing** - Integration with DeBridge parser for semantic transaction decoding
+
+  This makes the library immediately usable for new developers without reading extensive docs.
+
+  ### Direct IDL Exports
+
+  All 41 protocol IDLs are now exported as individual constants alongside their program IDs:
+
+  ```typescript
+  import { JUPITER_IDL, JUPITER_PROGRAM_ID } from "solana-idls";
+  ```
+
+  This enables direct integration with transaction parsers and custom tooling without going through the registry.
+
+  ### Optional Peer Dependency
+
+  Added `@coral-xyz/anchor` as an optional peer dependency for proper TypeScript types on IDL exports, while keeping the library lightweight for consumers who don't need Anchor.
+
+  ## Developer Experience
+
+  ### Build Improvements
+
+  - Migrated from tsup to tsdown for better library output and smaller bundle sizes
+  - Added Biome for fast linting and formatting
+  - Added `prepublishOnly` hook to ensure fresh builds
+
+  ### Documentation
+
+  - Updated README with practical "Quick Start" showing direct IDL usage (what most developers actually need)
+  - Added Examples section with links to working code
+  - All examples are type-checked via workspace setup
+
+  ## Breaking Changes
+
+  None - fully backward compatible.
+
+  ## Migration Guide
+
+  No migration needed. Existing code continues to work. New IDL exports are additive features.
+
 ## 1.1.0
 
 ### Minor Changes

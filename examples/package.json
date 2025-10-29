@@ -1,0 +1,16 @@
+{
+  "name": "examples",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {},
+  "dependencies": {
+    "solana-idls": "workspace:*",
+    "@coral-xyz/anchor": "^0.31.1",
+    "@debridge-finance/solana-transaction-parser": "^3.4.1",
+    "@solana/web3.js": "^1.95.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}

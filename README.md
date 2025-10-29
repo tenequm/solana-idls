@@ -16,6 +16,7 @@ Comprehensive Solana IDL database providing error codes, instruction names, and 
 - **Instruction resolution** - Discriminator → instruction name + account metadata
 - **Program identification** - Program ID → protocol name
 - **Hierarchical fallback** - Program-specific errors + Anchor framework
+- **Raw IDL objects** - Compatible with transaction parsers
 - **Type-safe** - Full TypeScript support
 - **Zero config** - Works out of the box
 
@@ -77,19 +78,75 @@ npm install solana-idls
 ## Quick Start
 
 ```typescript
+import { JUPITER_IDL, JUPITER_PROGRAM_ID } from 'solana-idls';
+
+// Access IDL directly
+console.log(JUPITER_IDL.instructions[0].name); // "route"
+console.log(JUPITER_PROGRAM_ID); // "JUP6Lk..."
+
+// Look up error by code
+const error = JUPITER_IDL.errors?.find(e => e.code === 6001);
+console.log(error?.name); // "SlippageToleranceExceeded"
+```
+
+**Or use the registry for error resolution across all protocols:**
+
+```typescript
 import { registry } from 'solana-idls';
 
-// Resolve error by program ID and error code
-const error = registry.resolve(
-  'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
-  6001
+const error = registry.resolve(JUPITER_PROGRAM_ID, 6001);
+console.log(`${error?.name}: ${error?.description}`);
+// "SlippageToleranceExceeded: Slippage tolerance exceeded"
+```
+
+## Examples
+
+See [`examples/`](./examples) for complete working examples:
+
+- **[`basic-usage.ts`](./examples/basic-usage.ts)** - Import and inspect IDLs
+- **[`error-lookup.ts`](./examples/error-lookup.ts)** - Resolve error codes to messages
+- **[`debridge-parser.ts`](./examples/debridge-parser.ts)** - Parse transactions with DeBridge
+
+```bash
+cd examples && pnpm install
+pnpm tsx error-lookup.ts
+```
+
+## IDL Objects for Transaction Parsers
+
+This library exports all IDL objects directly, making it compatible with transaction parsers like [@debridge-finance/solana-transaction-parser](https://github.com/debridge-finance/solana-tx-parser-public):
+
+```typescript
+import { JUPITER_IDL, ORCA_WHIRLPOOLS_IDL, IDL_MAP } from 'solana-idls';
+import { SolanaParser } from '@debridge-finance/solana-transaction-parser';
+
+// Use with debridge parser
+const parser = new SolanaParser([
+  {
+    idl: JUPITER_IDL,
+    programId: 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+  },
+  {
+    idl: ORCA_WHIRLPOOLS_IDL,
+    programId: 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
+  }
+]);
+
+// Parse transaction
+const parsed = await parser.parseTransaction(
+  connection,
+  'YOUR_TX_SIGNATURE'
 );
 
-if (error) {
-  console.log(`${error.name}: ${error.description}`);
-  // Output: "SlippageToleranceExceeded: Slippage tolerance exceeded"
-}
+// Or use the IDL_MAP for dynamic access
+const jupiterIdl = IDL_MAP['jupiter'];
+const orcaIdl = IDL_MAP['orca-whirlpools'];
 ```
+
+**Available exports:**
+- Individual IDLs: `JUPITER_IDL`, `ORCA_WHIRLPOOLS_IDL`, `METEORA_DLMM_IDL`, etc.
+- Program IDs: `JUPITER_PROGRAM_ID`, `ORCA_WHIRLPOOLS_PROGRAM_ID`, etc.
+- Complete map: `IDL_MAP` - Object mapping config keys to IDL objects
 
 ## API
 
@@ -137,6 +194,46 @@ results.forEach(({ protocol, error }) => {
   console.log(`[${protocol.name}] ${error.name}`);
 });
 ```
+
+### `IDL_MAP`
+
+Access all IDLs by their configuration key (from `protocols.config.ts`).
+
+```typescript
+import { IDL_MAP } from 'solana-idls';
+
+// Access IDLs dynamically
+const jupiterIdl = IDL_MAP['jupiter'];
+const orcaIdl = IDL_MAP['orca-whirlpools'];
+const meteoraIdl = IDL_MAP['meteora-dlmm'];
+
+// All 41 protocols available
+Object.keys(IDL_MAP); // ['jupiter', 'orca-whirlpools', 'meteora-dlmm', ...]
+```
+
+### Individual IDL Exports
+
+Import specific IDLs and their program IDs directly.
+
+```typescript
+import {
+  JUPITER_IDL,
+  JUPITER_PROGRAM_ID,
+  ORCA_WHIRLPOOLS_IDL,
+  ORCA_WHIRLPOOLS_PROGRAM_ID,
+  METEORA_DLMM_IDL,
+  METEORA_DLMM_PROGRAM_ID
+} from 'solana-idls';
+
+// Type-safe IDL access
+const jupiterIdl: Idl = JUPITER_IDL;
+const programId: string = JUPITER_PROGRAM_ID;
+```
+
+**Naming convention:**
+- IDL constants: `{PROTOCOL_NAME}_IDL` (e.g., `JUPITER_IDL`, `ORCA_WHIRLPOOLS_IDL`)
+- Program IDs: `{PROTOCOL_NAME}_PROGRAM_ID` (e.g., `JUPITER_PROGRAM_ID`)
+- All uppercase with underscores, matches the `idlFileName` from config
 
 ## Usage Example
 
